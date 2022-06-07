@@ -31,6 +31,8 @@ const Gio = imports.gi.Gio;
 const Config = imports.misc.config;
 const ExtensionUtils = imports.misc.extensionUtils;
 
+const ByteArray = imports.byteArray;
+
 /**
  * initTranslations:
  * @domain: (optional): the gettext domain to use
@@ -91,4 +93,90 @@ function getSettings(schema) {
     }
 
     return new Gio.Settings({settings_schema: schemaObj});
+}
+
+function parse_bytearray(bytearray) {
+  if (!ByteArray.toString(bytearray).match(/GjsModule byteArray/)) {
+      return ByteArray.toString(bytearray);
+  }
+  return bytearray
+}
+
+function check_sensors(sensor_type) {
+  const hwmon_path = '/sys/class/hwmon/';
+  const hwmon_dir = Gio.file_new_for_path(hwmon_path);
+
+  const sensor_files = [];
+  const sensor_labels = [];
+
+  function get_label_from(file) {
+      if (file.query_exists(null)) {
+          // load_contents (and even cat) fails with "Invalid argument" for some label files
+          try {
+              let [success, contents] = file.load_contents(null);
+              if (success) {
+                  return String(parse_bytearray(contents)).split('\n')[0];
+              }
+          } catch (e) {
+              log('[System monitor] error loading label from file ' + file.get_path() + ': ' + e);
+          }
+      }
+      return null;
+  }
+
+  function add_sensors_from(chip_dir, chip_label) {
+      const chip_children = chip_dir.enumerate_children(
+          'standard::name,standard::type', Gio.FileQueryInfoFlags.NONE, null);
+      if (!chip_children) {
+          log('[System monitor] error enumerating children of chip ' + chip_dir.get_path());
+          return false;
+      }
+
+      const input_entry_regex = new RegExp('^' + sensor_type + '(\\d+)_input$');
+      let info;
+      let added = false;
+      while ((info = chip_children.next_file(null))) {
+          if (info.get_file_type() !== Gio.FileType.REGULAR) {
+              continue;
+          }
+          const matches = info.get_name().match(input_entry_regex);
+          if (!matches) {
+              continue;
+          }
+          const input_ordinal = matches[1];
+          const input = chip_children.get_child(info);
+          const input_label = get_label_from(chip_dir.get_child(sensor_type + input_ordinal + '_label'));
+
+          sensor_files.push(input.get_path());
+          sensor_labels.push(chip_label + ' - ' + (input_label || input_ordinal));
+          added = true;
+      }
+      return added;
+  }
+
+  const hwmon_children = hwmon_dir.enumerate_children(
+      'standard::name,standard::type', Gio.FileQueryInfoFlags.NONE, null);
+  if (!hwmon_children) {
+      log('[System monitor] error enumerating hwmon children');
+      return [[], []];
+  }
+
+  let info;
+  while ((info = hwmon_children.next_file(null))) {
+      if (info.get_file_type() !== Gio.FileType.DIRECTORY || !info.get_name().match(/^hwmon\d+$/)) {
+          continue;
+      }
+      const chip = hwmon_children.get_child(info);
+      const chip_label = get_label_from(chip.get_child('name')) || chip.get_basename();
+
+      if (!add_sensors_from(chip, chip_label)) {
+          // This is here to provide compatibility with previous code, but I can't find any
+          // information about sensors being stored in chip/device directory. Can we delete it?
+          const chip_device = chip.get_child('device');
+          if (chip_device.query_exists(null)) {
+              add_sensors_from(chip_device, chip_label);
+          }
+      }
+  }
+  return [sensor_files, sensor_labels];
 }

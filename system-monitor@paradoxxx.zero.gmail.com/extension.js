@@ -2096,6 +2096,12 @@ const Thermal = class SystemMonitor_Thermal extends ElementBase {
         this.fahrenheit_unit = Schema.get_boolean(this.elt + '-fahrenheit-unit');
         this.display_error = true;
         this.tip_format(this.temperature_symbol());
+        let sensor_label = Schema.get_string(this.elt + '-sensor-label');
+        let [_slist, _strlist] = Convenience.check_sensors('temp');
+        let sensor_index = _strlist.indexOf(sensor_label);
+        if (sensor_index > 0) {
+            Schema.set_string(this.elt + '-sensor-file', _slist[sensor_index]);
+        }
         Schema.connect('changed::' + this.elt + '-sensor-file', this.refresh.bind(this));
         this.update();
     }
@@ -2166,6 +2172,12 @@ const Fan = class SystemMonitor_Fan extends ElementBase {
         this.rpm = 0;
         this.display_error = true;
         this.tip_format(_('rpm'));
+        let sensor_label = Schema.get_string(this.elt + '-sensor-label');
+        let [_slist, _strlist] = Convenience.check_sensors('fan');
+        let sensor_index = _strlist.indexOf(sensor_label);
+        if (sensor_index > 0) {
+            Schema.set_string(this.elt + '-sensor-file', _slist[sensor_index]);
+        }
         Schema.connect('changed::' + this.elt + '-sensor-file', this.refresh.bind(this));
         this.update();
     }

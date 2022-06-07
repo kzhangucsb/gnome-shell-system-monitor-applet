@@ -265,6 +265,11 @@
       <summary>Sensor File</summary>
       <description>Location of the sensor file for cpu temp</description>
     </key>
+    <key name="thermal-sensor-label" type="s">
+      <default>''</default>
+      <summary>Sensor Label</summary>
+      <description>Sensor Label for cpu temp</description>
+    </key>
     <key name="thermal-threshold" type="i">
       <default>0</default>
       <summary>Thermal threshold</summary>
@@ -303,6 +308,11 @@
       <default>'/sys/devices/virtual/thermal/cooling_device0/cur_state'</default>
       <summary>Sensor File</summary>
       <description>Location of the sensor file for fan</description>
+    </key>
+    <key name="fan-sensor-label" type="s">
+      <default>''</default>
+      <summary>Sensor Lable</summary>
+      <description>Sensor Label for fan</description>
     </key>
     <key name="fan-fan0-color" type="s">
       <default>'#f2002e'</default>
