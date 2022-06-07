@@ -308,6 +308,7 @@ const SettingFrame = class SystemMonitor {
                 item.add([_('Please install lm-sensors')]);
             } else if (_slist.length === 1) {
                 this.schema.set_string(key, _slist[0]);
+                this.schema.set_string(key.replace("file", "label"), _strlist[0]);
             }
             item.add(_strlist);
             try {

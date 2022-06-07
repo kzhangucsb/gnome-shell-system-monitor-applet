@@ -311,7 +311,7 @@
     </key>
     <key name="fan-sensor-label" type="s">
       <default>''</default>
-      <summary>Sensor Lable</summary>
+      <summary>Sensor Label</summary>
       <description>Sensor Label for fan</description>
     </key>
     <key name="fan-fan0-color" type="s">
