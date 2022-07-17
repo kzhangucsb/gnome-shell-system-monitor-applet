@@ -2099,7 +2099,7 @@ const Thermal = class SystemMonitor_Thermal extends ElementBase {
         let sensor_label = Schema.get_string(this.elt + '-sensor-label');
         let [_slist, _strlist] = Convenience.check_sensors('temp');
         let sensor_index = _strlist.indexOf(sensor_label);
-        if (sensor_index > 0) {
+        if (sensor_index >= 0) {
             Schema.set_string(this.elt + '-sensor-file', _slist[sensor_index]);
         }
         Schema.connect('changed::' + this.elt + '-sensor-file', this.refresh.bind(this));
@@ -2175,7 +2175,7 @@ const Fan = class SystemMonitor_Fan extends ElementBase {
         let sensor_label = Schema.get_string(this.elt + '-sensor-label');
         let [_slist, _strlist] = Convenience.check_sensors('fan');
         let sensor_index = _strlist.indexOf(sensor_label);
-        if (sensor_index > 0) {
+        if (sensor_index >= 0) {
             Schema.set_string(this.elt + '-sensor-file', _slist[sensor_index]);
         }
         Schema.connect('changed::' + this.elt + '-sensor-file', this.refresh.bind(this));
